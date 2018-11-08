@@ -1,8 +1,8 @@
 package processors
 
 import (
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/util"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/util"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 )

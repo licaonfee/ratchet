@@ -3,7 +3,7 @@ package processors
 import (
 	"io"
 
-	"github.com/dailyburn/ratchet/data"
+	"github.com/licaonfee/ratchet/data"
 )
 
 // IoReaderWriter performs both the job of a IoReader and IoWriter.

@@ -15,6 +15,10 @@ func CSVString(v interface{}) string {
 	switch v.(type) {
 	case nil:
 		return ""
+	case int, int8, int16, int32, int64:
+		return fmt.Sprintf("%d", v)
+	case float32, float64:
+		return fmt.Sprintf("%.4f", v)
 	default:
 		return fmt.Sprintf("%v", v)
 	}

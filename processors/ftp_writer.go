@@ -3,10 +3,10 @@ package processors
 import (
 	"io"
 
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/logger"
-	"github.com/dailyburn/ratchet/util"
 	"github.com/jlaffaye/ftp"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/logger"
+	"github.com/licaonfee/ratchet/util"
 )
 
 // FtpWriter type represents an ftp writter processor
@@ -32,8 +32,10 @@ func (f *FtpWriter) connect(killChan chan error) {
 	if err != nil {
 		util.KillPipelineIfErr(err, killChan)
 	}
-
-	lerr := conn.Login(f.username, f.password)
+	var lerr = err
+	if conn != nil {
+		lerr = conn.Login(f.username, f.password)
+	}
 	if lerr != nil {
 		util.KillPipelineIfErr(lerr, killChan)
 	}
@@ -43,7 +45,7 @@ func (f *FtpWriter) connect(killChan chan error) {
 	f.conn = conn
 	go f.conn.Stor(f.path, r)
 	f.fileWriter = w
-	f.authenticated = true
+	f.authenticated = (lerr != nil)
 }
 
 // ProcessData writes data as is directly to the output file

@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/logger"
-	"github.com/dailyburn/ratchet/util"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/logger"
+	"github.com/licaonfee/ratchet/util"
 )
 
 // SQLReader runs the given SQL and passes the resulting data

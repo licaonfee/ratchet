@@ -169,13 +169,7 @@ func sendErr(err error, dataChan chan data.JSON) {
 
 // ExecuteSQLQuery allows you to execute arbitrary SQL statements
 func ExecuteSQLQuery(db *sql.DB, query string) error {
-	stmt, err := db.Prepare(query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Query(query)
+	_, err := db.Exec(query)
 	if err != nil {
 		return err
 	}

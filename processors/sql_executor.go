@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/logger"
-	"github.com/dailyburn/ratchet/util"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/logger"
+	"github.com/licaonfee/ratchet/util"
 )
 
 // SQLExecutor runs the given SQL and swallows any returned data.
@@ -57,6 +57,7 @@ func (s *SQLExecutor) ProcessData(d data.JSON, outputChan chan data.JSON, killCh
 	logger.Debug("SQLExecutor: Running - ", sql)
 	// See sql.go
 	err = util.ExecuteSQLQuery(s.readDB, sql)
+
 	util.KillPipelineIfErr(err, killChan)
 	logger.Info("SQLExecutor: Query complete")
 }
