@@ -138,7 +138,7 @@ func scanDataGeneric(rows *sql.Rows, columns []string, batchSize int, dataChan c
 // http://play.golang.org/p/2wHfO6YS3_
 func determineBytesValue(b []byte) (interface{}, error) {
 	var v interface{}
-	err := data.ParseJSONSilent(b, &v)
+	err := data.ParseJSON(b, &v)
 	if err != nil {
 		// need to quote strings for JSON to parse correctly
 		if !strings.Contains(string(b), `"`) {

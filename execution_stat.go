@@ -6,7 +6,8 @@ import (
 	"github.com/licaonfee/ratchet/data"
 )
 
-type executionStat struct {
+//ExecutionStat encapsutale statistics for pipeline
+type ExecutionStat struct {
 	dataSentCounter     int
 	dataReceivedCounter int
 	executionsCounter   int
@@ -18,24 +19,25 @@ type executionStat struct {
 	avgBytesSent        int
 }
 
-func (s *executionStat) recordExecution(foo func()) {
+func (s *ExecutionStat) recordExecution(foo func()) {
 	s.executionsCounter++
 	st := time.Now()
 	foo()
 	s.totalExecutionTime += time.Now().Sub(st).Seconds()
 }
 
-func (s *executionStat) recordDataSent(d data.JSON) {
+func (s *ExecutionStat) recordDataSent(d data.JSON) {
 	s.dataSentCounter++
 	s.totalBytesSent += len(d)
 }
 
-func (s *executionStat) recordDataReceived(d data.JSON) {
+func (s *ExecutionStat) recordDataReceived(d data.JSON) {
 	s.dataReceivedCounter++
 	s.totalBytesReceived += len(d)
 }
 
-func (s *executionStat) calculate() {
+//Calculate average values with zero division check
+func (s *ExecutionStat) Calculate() {
 	if s.executionsCounter > 0 {
 		s.avgExecutionTime = (s.totalExecutionTime / float64(s.executionsCounter))
 	}

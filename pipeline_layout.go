@@ -32,7 +32,7 @@ func (l *PipelineLayout) validate() error {
 	var stage *PipelineStage
 	for stageNum := range l.stages {
 		stage = l.stages[stageNum]
-		var dp *dataProcessor
+		var dp *ProcessorWrapper
 		for j := range stage.processors {
 			dp = stage.processors[j]
 			// 1) final stages must NOT have outputs set

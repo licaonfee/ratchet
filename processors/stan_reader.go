@@ -55,7 +55,7 @@ func (s *StanReader) forEachData(d data.JSON, killChan chan error, forEach func(
 	var derr interface{}
 
 	for d := range s.cdata {
-		if err := data.ParseJSONSilent(d, &derr); err != nil {
+		if err := data.ParseJSON(d, &derr); err != nil {
 			util.KillPipelineIfErr(err, killChan)
 		} else {
 			forEach(d)

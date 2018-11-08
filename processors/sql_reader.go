@@ -73,7 +73,7 @@ func (s *SQLReader) ForEachQueryData(d data.JSON, killChan chan error, forEach f
 		// First check if an error was returned back from the SQL processing
 		// helper, then if not call forEach with the received data.
 		var derr dataErr
-		if err := data.ParseJSONSilent(d, &derr); err == nil {
+		if err := data.ParseJSON(d, &derr); err == nil {
 			util.KillPipelineIfErr(errors.New(derr.Error), killChan)
 		} else {
 			forEach(d)

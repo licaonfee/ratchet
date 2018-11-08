@@ -52,7 +52,7 @@ func (s *SQLWriter) ProcessData(d data.JSON, outputChan chan data.JSON, killChan
 
 	// First check for SQLWriterData
 	var wd SQLWriterData
-	err := data.ParseJSONSilent(d, &wd)
+	err := data.ParseJSON(d, &wd)
 	logger.Info("SQLWriter: Writing data...")
 	if err == nil && wd.TableName != "" && wd.InsertData != nil {
 		logger.Debug("SQLWriter: SQLWriterData scenario")
