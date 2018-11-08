@@ -66,7 +66,7 @@ func (w *BigQueryWriter) Concurrency() int {
 
 func (w *BigQueryWriter) bqClient() *bigquery.Client {
 	if w.client == nil {
-		w.client = bigquery.New(w.config.JsonPemPath)
+		w.client = bigquery.New(w.config.JSONPemPath)
 		w.client.PrintDebug = true
 		if w.fieldsForNewTable != nil {
 			err := w.client.InsertNewTableIfDoesNotExist(w.config.ProjectID, w.config.DatasetID, w.tableName, w.fieldsForNewTable)

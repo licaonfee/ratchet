@@ -6,9 +6,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/logger"
 	"github.com/kisielk/sqlstruct"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/logger"
 )
 
 // GetDataFromSQLQuery is a util function that, given a properly intialized sql.DB
