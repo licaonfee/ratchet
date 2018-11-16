@@ -6,6 +6,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	"github.com/licaonfee/ratchet/logger"
 )
 
 // JSON is the data type that is passed along all data channels.
@@ -39,6 +41,7 @@ func ObjectsFromJSON(d JSON) ([]map[string]interface{}, error) {
 	var v interface{}
 	err := ParseJSON(d, &v)
 	if err != nil {
+		logger.Debug("ObjectsFromJSON: ", err, len(d))
 		return nil, err
 	}
 

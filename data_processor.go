@@ -88,9 +88,9 @@ func (dp *ProcessorWrapper) mergeIn() {
 	}()
 }
 
-// Do takes a DataProcessor instance and returns the dataProcessor
+// Do takes a DataProcessor instance and returns the ProcessorWrapper
 // type that will wrap it for internal ratchet processing. The details
-// of the dataProcessor wrapper type are abstracted away from the
+// of the ProcessorWrapper type are abstracted away from the
 // implementing end-user code. The "Do" function is named
 // succinctly to provide a nicer syntax when creating a PipelineLayout.
 // See the ratchet package documentation for code examples of creating

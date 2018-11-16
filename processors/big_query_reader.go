@@ -1,5 +1,6 @@
 package processors
 
+/*
 import (
 	"errors"
 
@@ -140,3 +141,4 @@ func (r *BigQueryReader) bqClient() *bigquery.Client {
 	}
 	return r.client
 }
+*/

@@ -191,15 +191,6 @@ func (p *Pipeline) initDataChan() chan data.JSON {
 	return make(chan data.JSON, p.BufferLength)
 }
 
-// func (p *Pipeline) String() string {
-// 	// Print an overview of the pipeline
-// 	stageNames := []string{}
-// 	for _, s := range p.layout.stages {
-// 		stageNames = append(stageNames, fmt.Sprintf("%v", s))
-// 	}
-// 	return p.Name + ": " + strings.Join(stageNames, " -> "))
-// }
-
 func handleInterrupt(killChan chan error) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)

@@ -118,6 +118,7 @@ func (dp *ProcessorWrapper) sendResults() {
 		}
 		e = dp.workList.Front()
 	}
+	//TODO: potential deadlock
 	dp.Unlock()
 
 	if dp.inputClosed && dp.workList.Len() == 0 {

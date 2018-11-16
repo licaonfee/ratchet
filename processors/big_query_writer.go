@@ -1,5 +1,6 @@
 package processors
 
+/*
 import (
 	bigquery "github.com/dailyburn/bigquery/client"
 	"github.com/licaonfee/ratchet/data"
@@ -78,3 +79,4 @@ func (w *BigQueryWriter) bqClient() *bigquery.Client {
 	}
 	return w.client
 }
+*/

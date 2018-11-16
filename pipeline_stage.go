@@ -29,6 +29,7 @@ func NewPipelineStage(processors ...*ProcessorWrapper) *PipelineStage {
 	return &PipelineStage{processors}
 }
 
+//TODO: Review if iterate over index is better than foreach
 func (s *PipelineStage) hasProcessor(p DataProcessor) bool {
 	for i := range s.processors {
 		if s.processors[i].DataProcessor == p {
@@ -38,6 +39,7 @@ func (s *PipelineStage) hasProcessor(p DataProcessor) bool {
 	return false
 }
 
+//TODO: Same as hasProcessor
 func (s *PipelineStage) hasOutput(p DataProcessor) bool {
 	for i := range s.processors {
 		for j := range s.processors[i].outputs {
