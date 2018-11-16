@@ -4,8 +4,8 @@ import (
 	"container/list"
 	"sync"
 
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/logger"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/logger"
 )
 
 // ConcurrentDataProcessor is a DataProcessor that also defines
@@ -46,14 +46,16 @@ type result struct {
 	open       bool
 }
 
-func (dp *dataProcessor) processData(d data.JSON, killChan chan error) {
+func (dp *ProcessorWrapper) processData(d data.JSON, killChan chan error) chan bool {
 	logger.Debug("dataProcessor: processData", dp, "with concurrency =", dp.concurrency)
+	exit := make(chan bool, 1)
 	// If no concurrency is needed, simply call stage.ProcessData and return...
 	if dp.concurrency <= 1 {
 		dp.recordExecution(func() {
 			dp.ProcessData(d, dp.outputChan, killChan)
+			exit <- true
 		})
-		return
+		return exit
 	}
 	// ... otherwise process the data in a concurrent queue/pool of goroutines
 	logger.Debug("dataProcessor: processData", dp, "waiting for work")
@@ -62,7 +64,6 @@ func (dp *dataProcessor) processData(d data.JSON, killChan chan error) {
 	logger.Debug("dataProcessor: processData", dp, "work obtained")
 	rc := make(chan data.JSON)
 	done := make(chan bool)
-	exit := make(chan bool)
 	// setup goroutine to handle result
 	go func() {
 		res := result{outputChan: dp.outputChan, data: []data.JSON{}, open: true}
@@ -95,13 +96,13 @@ func (dp *dataProcessor) processData(d data.JSON, killChan chan error) {
 	})
 
 	// wait on processing to complete
-	<-exit
+	return exit
 }
 
 // sendResults handles sending work that is completed, as well as
 // guaranteeing a FIFO order of the resulting data sent over the
 // original outputChan.
-func (dp *dataProcessor) sendResults() {
+func (dp *ProcessorWrapper) sendResults() {
 	dp.Lock()
 	logger.Debug("dataProcessor: sendResults checking for valid data to send")
 	e := dp.workList.Front()
@@ -117,6 +118,7 @@ func (dp *dataProcessor) sendResults() {
 		}
 		e = dp.workList.Front()
 	}
+	//TODO: potential deadlock
 	dp.Unlock()
 
 	if dp.inputClosed && dp.workList.Len() == 0 {

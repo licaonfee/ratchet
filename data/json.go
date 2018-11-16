@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/dailyburn/ratchet/logger"
+	"github.com/licaonfee/ratchet/logger"
 )
 
 // JSON is the data type that is passed along all data channels.
@@ -17,26 +17,12 @@ type JSON []byte
 // NewJSON is a simple wrapper for json.Marshal.
 func NewJSON(v interface{}) (JSON, error) {
 	d, err := json.Marshal(v)
-	if err != nil {
-		logger.Debug(fmt.Sprintf("data: failure to marshal JSON %+v - error is \"%v\"", v, err.Error()))
-		logger.Debug(fmt.Sprintf("	Failed val: %+v", v))
-	}
 	return d, err
 }
 
-// ParseJSON is a simple wrapper for json.Unmarshal
-func ParseJSON(d JSON, v interface{}) error {
-	err := json.Unmarshal(d, v)
-	if err != nil {
-		logger.Debug(fmt.Sprintf("data: failure to unmarshal JSON into %+v - error is \"%v\"", v, err.Error()))
-		logger.Debug(fmt.Sprintf("	Failed Data: %+v", string(d)))
-	}
-	return err
-}
-
-// ParseJSONSilent won't log output when unmarshaling fails.
+// ParseJSON won't log output when unmarshaling fails.
 // It can be used in cases where failure is expected.
-func ParseJSONSilent(d JSON, v interface{}) error {
+func ParseJSON(d JSON, v interface{}) error {
 	return json.Unmarshal(d, v)
 }
 
@@ -49,13 +35,13 @@ func ObjectsFromJSON(d JSON) ([]map[string]interface{}, error) {
 
 	// return if we have null instead of object(s).
 	if bytes.Equal(d, []byte("null")) {
-		logger.Debug("ObjectsFromJSON: received null. Expected object or objects. Skipping.")
 		return objects, nil
 	}
 
 	var v interface{}
 	err := ParseJSON(d, &v)
 	if err != nil {
+		logger.Debug("ObjectsFromJSON: ", err, len(d))
 		return nil, err
 	}
 

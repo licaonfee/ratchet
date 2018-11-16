@@ -6,9 +6,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/logger"
 	"github.com/kisielk/sqlstruct"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/logger"
 )
 
 // GetDataFromSQLQuery is a util function that, given a properly intialized sql.DB
@@ -138,7 +138,7 @@ func scanDataGeneric(rows *sql.Rows, columns []string, batchSize int, dataChan c
 // http://play.golang.org/p/2wHfO6YS3_
 func determineBytesValue(b []byte) (interface{}, error) {
 	var v interface{}
-	err := data.ParseJSONSilent(b, &v)
+	err := data.ParseJSON(b, &v)
 	if err != nil {
 		// need to quote strings for JSON to parse correctly
 		if !strings.Contains(string(b), `"`) {
@@ -169,13 +169,7 @@ func sendErr(err error, dataChan chan data.JSON) {
 
 // ExecuteSQLQuery allows you to execute arbitrary SQL statements
 func ExecuteSQLQuery(db *sql.DB, query string) error {
-	stmt, err := db.Prepare(query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Query(query)
+	_, err := db.Exec(query)
 	if err != nil {
 		return err
 	}

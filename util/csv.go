@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/dailyburn/ratchet/data"
+	"github.com/licaonfee/ratchet/data"
 )
 
 // CSVString returns an empty string for nil values to make sure that the
@@ -15,6 +15,10 @@ func CSVString(v interface{}) string {
 	switch v.(type) {
 	case nil:
 		return ""
+	case int, int8, int16, int32, int64:
+		return fmt.Sprintf("%d", v)
+	case float32, float64:
+		return fmt.Sprintf("%.4f", v)
 	default:
 		return fmt.Sprintf("%v", v)
 	}
@@ -29,6 +33,7 @@ type CSVParameters struct {
 	Header        []string
 	SendUpstream  bool
 	QuoteEscape   string
+	Comma         rune
 }
 
 // CSVProcess writes the contents to the file and optionally sends the written bytes
@@ -62,6 +67,10 @@ func CSVProcess(params *CSVParameters, d data.JSON, outputChan chan data.JSON, k
 			row = append(row, CSVString(v))
 		}
 		rows = append(rows, row)
+	}
+
+	if params.Comma != 0 {
+		params.Writer.Comma = params.Comma
 	}
 
 	if params.SendUpstream {

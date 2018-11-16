@@ -5,8 +5,8 @@ import (
 	"compress/gzip"
 	"io"
 
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/util"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/util"
 )
 
 // IoReader wraps an io.Reader and reads it.
@@ -36,6 +36,7 @@ func (r *IoReader) ProcessData(d data.JSON, outputChan chan data.JSON, killChan 
 
 // Finish - see interface for documentation.
 func (r *IoReader) Finish(outputChan chan data.JSON, killChan chan error) {
+
 }
 
 // ForEachData either reads by line or by buffered stream, sending the data

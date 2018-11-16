@@ -1,12 +1,13 @@
 package processors
 
+/*
 import (
 	"errors"
 
 	bigquery "github.com/dailyburn/bigquery/client"
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/logger"
-	"github.com/dailyburn/ratchet/util"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/logger"
+	"github.com/licaonfee/ratchet/util"
 )
 
 // BigQueryReader is used to query data from Google's BigQuery,
@@ -36,7 +37,7 @@ type BigQueryReader struct {
 
 // BigQueryConfig is used when init'ing new BigQueryReader instances.
 type BigQueryConfig struct {
-	JsonPemPath string
+	JSONPemPath string
 	ProjectID   string
 	DatasetID   string
 }
@@ -132,11 +133,12 @@ func (r *BigQueryReader) bqClient() *bigquery.Client {
 	if r.client == nil {
 		if r.UnflattenResults {
 			tmpTable := r.TmpTableName
-			r.client = bigquery.New(r.config.JsonPemPath, bigquery.AllowLargeResults(true, tmpTable, false))
+			r.client = bigquery.New(r.config.JSONPemPath, bigquery.AllowLargeResults(true, tmpTable, false))
 		} else {
-			r.client = bigquery.New(r.config.JsonPemPath)
+			r.client = bigquery.New(r.config.JSONPemPath)
 		}
 		r.client.PrintDebug = false
 	}
 	return r.client
 }
+*/

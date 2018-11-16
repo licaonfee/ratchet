@@ -2,14 +2,13 @@ package ratchet
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/logger"
-	"github.com/dailyburn/ratchet/util"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/logger"
+	"github.com/licaonfee/ratchet/util"
 )
 
 // StartSignal is what's sent to a starting DataProcessor
@@ -26,6 +25,12 @@ type Pipeline struct {
 	wg           sync.WaitGroup
 }
 
+// PipelineIface provides an interface to enable mocking the Pipeline.
+// This makes unit testing your code that uses pipelines easier.
+type PipelineIface interface {
+	Run() chan error
+}
+
 // NewPipeline creates a new pipeline ready to run the given DataProcessors.
 // For more complex use-cases, see NewBranchingPipeline.
 func NewPipeline(processors ...DataProcessor) *Pipeline {
@@ -36,7 +41,7 @@ func NewPipeline(processors ...DataProcessor) *Pipeline {
 		if i < len(processors)-1 {
 			dp.Outputs(processors[i+1])
 		}
-		stages[i] = NewPipelineStage([]*dataProcessor{dp}...)
+		stages[i] = NewPipelineStage([]*ProcessorWrapper{dp}...)
 	}
 	p.layout, _ = NewPipelineLayout(stages...)
 	return p
@@ -55,8 +60,8 @@ func NewBranchingPipeline(layout *PipelineLayout) *Pipeline {
 // dataProcessor.outputs are "DataProcessor" interface types, and not the "dataProcessor"
 // wrapper types. This function loops through the layout and matches the
 // interface to wrapper objects and returns them.
-func (p *Pipeline) dataProcessorOutputs(dp *dataProcessor) []*dataProcessor {
-	dpouts := make([]*dataProcessor, len(dp.outputs))
+func (p *Pipeline) dataProcessorOutputs(dp *ProcessorWrapper) []*ProcessorWrapper {
+	dpouts := make([]*ProcessorWrapper, len(dp.outputs))
 	for i := range dp.outputs {
 		for _, stage := range p.layout.stages {
 			for j := range stage.processors {
@@ -113,18 +118,28 @@ func (p *Pipeline) runStages(killChan chan error) {
 		for _, dp := range stage.processors {
 			p.wg.Add(1)
 			// Each DataProcessor runs in a separate gorountine.
-			go func(n int, dp *dataProcessor) {
+			go func(n int, dp *ProcessorWrapper) {
 				// This is where the main DataProcessor interface
 				// functions are called.
 				logger.Info(p.Name, "- stage", n+1, dp, "waiting to receive data")
+
+				// Store a bunch of channels, so we can wait on their output without messing up the order of operations.
+				exitChans := []chan bool{}
+
 				for d := range dp.inputChan {
 					logger.Info(p.Name, "- stage", n+1, dp, "received data")
 					if p.PrintData {
 						logger.Debug(p.Name, "- stage", n+1, dp, "data =", string(d))
 					}
 					dp.recordDataReceived(d)
-					dp.processData(d, killChan)
+					exitChans = append(exitChans, dp.processData(d, killChan))
 				}
+
+				// Wait until everything is finished before calling dp.Finish.  Since execution happens asynchronously, we may still be waiting on a processData call to return.
+				for i := range exitChans {
+					<-exitChans[i]
+				}
+
 				logger.Info(p.Name, "- stage", n+1, dp, "input closed, calling Finish")
 				dp.Finish(dp.outputChan, killChan)
 				if dp.outputChan != nil {
@@ -172,50 +187,29 @@ func (p *Pipeline) Run() (killChan chan error) {
 	return killChan
 }
 
-func (p *Pipeline) initDataChans(length int) []chan data.JSON {
-	cs := make([]chan data.JSON, length)
-	for i := range cs {
-		cs[i] = p.initDataChan()
-	}
-	return cs
-}
 func (p *Pipeline) initDataChan() chan data.JSON {
 	return make(chan data.JSON, p.BufferLength)
 }
-
-// func (p *Pipeline) String() string {
-// 	// Print an overview of the pipeline
-// 	stageNames := []string{}
-// 	for _, s := range p.layout.stages {
-// 		stageNames = append(stageNames, fmt.Sprintf("%v", s))
-// 	}
-// 	return p.Name + ": " + strings.Join(stageNames, " -> "))
-// }
 
 func handleInterrupt(killChan chan error) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			killChan <- errors.New("Exiting due to interrupt signal.")
+			killChan <- errors.New("interrupt signal")
 		}
 	}()
 }
 
-// Stats returns a string (formatted for output display) listing the stats
-// gathered for each stage executed.
-func (p *Pipeline) Stats() string {
-	o := fmt.Sprintf("%s: %s\r\n", p.Name, p.timer)
+// Stats returns an slice with all DataProcessor statistics
+func (p *Pipeline) Stats() []map[string]ExecutionStat {
+	es := make([]map[string]ExecutionStat, len(p.layout.stages))
 	for n, stage := range p.layout.stages {
-		o += fmt.Sprintf("Stage %d)\r\n", n+1)
+		es[n] = make(map[string]ExecutionStat)
 		for _, dp := range stage.processors {
-			o += fmt.Sprintf("  * %v\r\n", dp)
-			dp.executionStat.calculate()
-			o += fmt.Sprintf("     - Total/Avg Execution Time = %f/%fs\r\n", dp.totalExecutionTime, dp.avgExecutionTime)
-			o += fmt.Sprintf("     - Payloads Sent/Received = %d/%d\r\n", dp.dataSentCounter, dp.dataReceivedCounter)
-			o += fmt.Sprintf("     - Total/Avg Bytes Sent = %d/%d\r\n", dp.totalBytesSent, dp.avgBytesSent)
-			o += fmt.Sprintf("     - Total/Avg Bytes Received = %d/%d\r\n", dp.totalBytesReceived, dp.avgBytesReceived)
+			dp.ExecutionStat.Calculate()
+			es[n][dp.String()] = dp.ExecutionStat
 		}
 	}
-	return o
+	return es
 }

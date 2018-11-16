@@ -2,7 +2,7 @@ package ratchet
 
 // PipelineStage holds one or more DataProcessor instances.
 type PipelineStage struct {
-	processors []*dataProcessor
+	processors []*ProcessorWrapper
 }
 
 // NewPipelineStage creates a PipelineStage instance given a series
@@ -25,10 +25,11 @@ type PipelineStage struct {
 // channel management works behind the scenes.
 //
 // See the ratchet package documentation for more code examples.
-func NewPipelineStage(processors ...*dataProcessor) *PipelineStage {
+func NewPipelineStage(processors ...*ProcessorWrapper) *PipelineStage {
 	return &PipelineStage{processors}
 }
 
+//TODO: Review if iterate over index is better than foreach
 func (s *PipelineStage) hasProcessor(p DataProcessor) bool {
 	for i := range s.processors {
 		if s.processors[i].DataProcessor == p {
@@ -38,6 +39,7 @@ func (s *PipelineStage) hasProcessor(p DataProcessor) bool {
 	return false
 }
 
+//TODO: Same as hasProcessor
 func (s *PipelineStage) hasOutput(p DataProcessor) bool {
 	for i := range s.processors {
 		for j := range s.processors[i].outputs {

@@ -1,3 +1,5 @@
+package ratchet
+
 /*
 Package ratchet is a library for performing data pipeline / ETL tasks in Go.
 
@@ -149,4 +151,3 @@ you have when designing your Pipeline's layout and to demonstrate the syntax for
 constructing a new PipelineLayout.
 
 */
-package ratchet
