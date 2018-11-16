@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
-	"github.com/dailyburn/ratchet"
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/logger"
-	"github.com/dailyburn/ratchet/processors"
+	"github.com/licaonfee/ratchet"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/logger"
+	"github.com/licaonfee/ratchet/processors"
 )
 
 // dummyProcessorDuration is the amount of time ProcessData will spend waiting before it returns.
@@ -49,7 +50,6 @@ func (dp *dummyConcurrentProcessor) Concurrency() int {
 }
 
 func (dp *dummyConcurrentProcessor) ProcessData(d data.JSON, outputChan chan data.JSON, killChan chan error) {
-	time.Sleep(dummyProcessorDuration * time.Second)
 	outputChan <- d
 }
 
@@ -64,7 +64,7 @@ func (dp *dummyProcessor) String() string {
 }
 
 func (dp *dummyProcessor) ProcessData(d data.JSON, outputChan chan data.JSON, killChan chan error) {
-	time.Sleep(dummyProcessorDuration * time.Second)
+	//time.Sleep(dummyProcessorDuration * time.Second)
 	outputChan <- d
 }
 
@@ -89,31 +89,42 @@ func (dw *dummyWriter) ProcessData(d data.JSON, outputChan chan data.JSON, killC
 func (dw *dummyWriter) Finish(outputChan chan data.JSON, killChan chan error) {
 }
 
-func TestDataProcessor(t *testing.T) {
-	logger.LogLevel = logger.LevelDebug
+//wait until timeout
+type hangProcessor struct{}
 
+func (p *hangProcessor) ProcessData(d data.JSON, outputChan chan data.JSON, killChan chan error) {
+	time.Sleep(time.Second * 60)
+}
+
+func (h *hangProcessor) Finish(outputChan chan data.JSON, killChan chan error) {
+
+}
+func TestDataProcessor(t *testing.T) {
 	data := [4]string{"hi", "there", "guys", "!"}
 	writer := dummyWriter{}
 	pipeline := ratchet.NewPipeline(&dummyReader{data: data}, &dummyProcessor{}, &writer)
 
-	start := time.Now()
 	err := <-pipeline.Run()
-	end := time.Now()
 
-	// This should take about
-	// (len(data) * dummyProcessorDuration) + 1
-	// seconds to finish.
-	//
-	// One second is added to account for other processing time.
-	expectedDuration := time.Duration((len(data)*dummyProcessorDuration)+1) * time.Second
-	if end.Sub(start) > expectedDuration {
-		t.Errorf("Expected pipeline to finish in ~%s, finished in %s", expectedDuration, end.Sub(start))
-	}
 	if err != nil {
 		t.Error("An error occurred in the ratchet pipeline:", err.Error())
 	}
+
 	if data != writer.data {
 		t.Errorf("Expected %#v to be passed through the pipeline, got %#v", data, writer.data)
+	}
+}
+
+func TestOsInterrupt(t *testing.T) {
+	data := [4]string{"hi", "there", "guys", "!"}
+	writer := dummyWriter{}
+	pipeline := ratchet.NewPipeline(&dummyReader{data: data}, &hangProcessor{}, &writer)
+
+	c := pipeline.Run()
+	syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+	err := <-c
+	if err.Error() != "interrupt signal" {
+		t.Error("An error occurred in the ratchet pipeline:", err.Error())
 	}
 }
 
@@ -124,24 +135,21 @@ func TestConcurrentDataProcessor(t *testing.T) {
 	writer := dummyWriter{}
 	pipeline := ratchet.NewPipeline(&dummyReader{data: data}, &dummyConcurrentProcessor{}, &writer)
 
-	start := time.Now()
 	err := <-pipeline.Run()
-	end := time.Now()
 
-	// This should take about
-	// (len(data) * dummyProcessorDuration / dummyConcurrentProcessorConcurrency) + 1
-	// seconds to finish.
-	//
-	// One second is added to account for other processing time.
-	expectedDuration := time.Duration((len(data)*dummyProcessorDuration/dummyProcessorConcurrency)+1) * time.Second
-	if end.Sub(start) > expectedDuration {
-		t.Errorf("Expected pipeline to finish in ~%s, finished in %s", expectedDuration, end.Sub(start))
-	}
 	if err != nil {
 		t.Error("An error occurred in the ratchet pipeline:", err.Error())
 	}
-	if data != writer.data {
-		t.Errorf("Expected %#v to be passed through the pipeline, got %#v", data, writer.data)
+	var ok bool
+	for _, s := range data {
+		for _, x := range writer.data {
+			if s == x {
+				ok = true
+			}
+		}
+		if !ok {
+			t.Errorf("Expected %#v to be passed through the pipeline, got %#v", data, writer.data)
+		}
 	}
 }
 
@@ -255,4 +263,28 @@ func ExampleNewBranchingPipeline() {
 
 	// Output:
 	// HELLO WORLD
+}
+
+func TestPipeline_Stats(t *testing.T) {
+	hello := processors.NewIoReader(strings.NewReader("Hello world!"))
+	stdout := processors.NewIoWriter(os.Stdout)
+	pipeline := ratchet.NewPipeline(hello, stdout)
+	pipeline.PrintData = true
+	proc := []string{hello.String(), stdout.String()}
+	err := <-pipeline.Run()
+	st := pipeline.Stats()
+	if err != nil {
+		t.Error("An error occurred in the ratchet pipeline:", err.Error())
+	}
+	if len(st) != len(proc) {
+		t.Errorf("Missmatch stage count Got %v Want %v", len(st), len(proc))
+	}
+	for i, n := range proc {
+		_, ok := st[i][n]
+		if !ok {
+			t.Errorf("Missing Processor %s", n)
+		}
+
+	}
+
 }

@@ -1,10 +1,11 @@
 package processors
 
+/*
 import (
 	bigquery "github.com/dailyburn/bigquery/client"
-	"github.com/dailyburn/ratchet/data"
-	"github.com/dailyburn/ratchet/logger"
-	"github.com/dailyburn/ratchet/util"
+	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/logger"
+	"github.com/licaonfee/ratchet/util"
 )
 
 // BigQueryWriter is used to write data to Google's BigQuery. If the table you want to
@@ -66,7 +67,7 @@ func (w *BigQueryWriter) Concurrency() int {
 
 func (w *BigQueryWriter) bqClient() *bigquery.Client {
 	if w.client == nil {
-		w.client = bigquery.New(w.config.JsonPemPath)
+		w.client = bigquery.New(w.config.JSONPemPath)
 		w.client.PrintDebug = true
 		if w.fieldsForNewTable != nil {
 			err := w.client.InsertNewTableIfDoesNotExist(w.config.ProjectID, w.config.DatasetID, w.tableName, w.fieldsForNewTable)
@@ -78,3 +79,4 @@ func (w *BigQueryWriter) bqClient() *bigquery.Client {
 	}
 	return w.client
 }
+*/
