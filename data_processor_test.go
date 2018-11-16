@@ -1,9 +1,10 @@
-package ratchet
+package ratchet_test
 
 import (
 	"reflect"
 	"testing"
 
+	"github.com/licaonfee/ratchet"
 	"github.com/licaonfee/ratchet/data"
 )
 
@@ -20,19 +21,19 @@ func (d *dummyDataProcessor) Finish(o chan data.JSON, k chan error) {
 }
 func TestDo(t *testing.T) {
 	type args struct {
-		processor DataProcessor
+		processor ratchet.DataProcessor
 	}
 	dummy := &dummyDataProcessor{q: 0}
 	tests := []struct {
 		name string
 		args args
-		want *ProcessorWrapper
+		want *ratchet.ProcessorWrapper
 	}{
-		{"Inmutable DataProcessor", args{processor: dummy}, &ProcessorWrapper{DataProcessor: dummy}},
+		{"Inmutable DataProcessor", args{processor: dummy}, &ratchet.ProcessorWrapper{DataProcessor: dummy}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Do(tt.args.processor); !reflect.DeepEqual(got.DataProcessor, tt.want.DataProcessor) {
+			if got := ratchet.Do(tt.args.processor); !reflect.DeepEqual(got.DataProcessor, tt.want.DataProcessor) {
 				t.Errorf("Do() = %#v, want %#v", got, tt.want)
 			}
 		})

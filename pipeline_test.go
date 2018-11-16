@@ -96,7 +96,7 @@ func (p *hangProcessor) ProcessData(d data.JSON, outputChan chan data.JSON, kill
 	time.Sleep(time.Second * 60)
 }
 
-func (h *hangProcessor) Finish(outputChan chan data.JSON, killChan chan error) {
+func (p *hangProcessor) Finish(outputChan chan data.JSON, killChan chan error) {
 
 }
 func TestDataProcessor(t *testing.T) {

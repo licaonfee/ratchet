@@ -4,7 +4,6 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/licaonfee/ratchet/data"
-	"github.com/licaonfee/ratchet/logger"
 	"github.com/licaonfee/ratchet/util"
 	"github.com/pkg/sftp"
 )
@@ -44,7 +43,6 @@ func NewSftpWriterByFile(file *sftp.File) *SftpWriter {
 
 // ProcessData writes data as is directly to the output file
 func (w *SftpWriter) ProcessData(d data.JSON, outputChan chan data.JSON, killChan chan error) {
-	logger.Debug("SftpWriter Process data:", string(d))
 	w.ensureInitialized(killChan)
 	_, e := w.file.Write([]byte(d))
 	util.KillPipelineIfErr(e, killChan)
@@ -70,8 +68,6 @@ func (w *SftpWriter) ensureInitialized(killChan chan error) {
 
 	client, err := util.SftpClient(w.parameters.Server, w.parameters.Username, w.parameters.AuthMethods)
 	util.KillPipelineIfErr(err, killChan)
-
-	logger.Info("Path", w.parameters.Path)
 
 	file, err := client.Create(w.parameters.Path)
 	util.KillPipelineIfErr(err, killChan)
