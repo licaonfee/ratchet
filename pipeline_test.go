@@ -154,7 +154,7 @@ func TestConcurrentDataProcessor(t *testing.T) {
 }
 
 func TestConcurrentFuncTransformer(t *testing.T) {
-	logger.LogLevel = logger.LevelDebug
+	logger.LogLevel = logger.LevelSilent
 
 	dataSlice := [4]string{"hi", "there", "guys", "!"}
 	expected := [4]string{"HI", "THERE", "GUYS", "!"}
@@ -162,30 +162,27 @@ func TestConcurrentFuncTransformer(t *testing.T) {
 
 	// Use a real FuncTransformer instead of a dummyConcurrentProcessor
 	transformer := processors.NewFuncTransformer(func(d data.JSON) data.JSON {
-		time.Sleep(3 * time.Second)
 		return data.JSON(strings.ToUpper(string(d)))
 	})
 	transformer.ConcurrencyLevel = dummyProcessorConcurrency
 
 	pipeline := ratchet.NewPipeline(&dummyReader{data: dataSlice}, transformer, &writer)
 
-	start := time.Now()
 	err := <-pipeline.Run()
-	end := time.Now()
 
-	// This should take about
-	// (len(data) * dummyProcessorDuration / dummyConcurrentProcessorConcurrency) + 1
-	// seconds to finish.
-	//
-	// One second is added to account for other processing time.
-	expectedDuration := time.Duration((len(dataSlice)*dummyProcessorDuration/dummyProcessorConcurrency)+1) * time.Second
-	if end.Sub(start) > expectedDuration {
-		t.Errorf("Expected pipeline to finish in ~%s, finished in %s", expectedDuration, end.Sub(start))
-	}
 	if err != nil {
 		t.Error("An error occurred in the ratchet pipeline:", err.Error())
 	}
-	if expected != writer.data {
+	var matchCount int
+	for _, ex := range expected {
+		for _, dt := range writer.data {
+			if ex == dt {
+				matchCount++
+				continue
+			}
+		}
+	}
+	if matchCount != len(expected) {
 		t.Errorf("Expected transform results %#v, got %#v", expected, writer.data)
 	}
 }

@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"runtime"
 )
 
 // Ordering the importance of log information. See LogLevel below.
@@ -36,27 +35,16 @@ var defaultLogger = log.New(os.Stdout, "", log.LstdFlags)
 // Debug logs output when LogLevel is set to at least Debug level
 func Debug(v ...interface{}) {
 	logit(LevelDebug, v)
-	if Notifier != nil {
-		Notifier.RatchetNotify(LevelDebug, nil, v)
-	}
 }
 
 // Info logs output when LogLevel is set to at least Info level
 func Info(v ...interface{}) {
 	logit(LevelInfo, v)
-	if Notifier != nil {
-		Notifier.RatchetNotify(LevelInfo, nil, v)
-	}
 }
 
 // Error logs output when LogLevel is set to at least Error level
 func Error(v ...interface{}) {
 	logit(LevelError, v)
-	if Notifier != nil {
-		trace := make([]byte, 4096)
-		runtime.Stack(trace, true)
-		Notifier.RatchetNotify(LevelError, trace, v)
-	}
 }
 
 // ErrorWithoutTrace logs output when LogLevel is set to at least Error level
@@ -64,23 +52,20 @@ func Error(v ...interface{}) {
 // using a RatchetNotifier implementation.
 func ErrorWithoutTrace(v ...interface{}) {
 	logit(LevelError, v)
-	if Notifier != nil {
-		Notifier.RatchetNotify(LevelError, nil, v)
-	}
 }
 
 // Status logs output when LogLevel is set to at least Status level
 // Status output is high-level status events like stages starting/completing.
 func Status(v ...interface{}) {
 	logit(LevelStatus, v)
-	if Notifier != nil {
-		Notifier.RatchetNotify(LevelStatus, nil, v)
-	}
 }
 
 func logit(lvl int, v ...interface{}) {
 	if lvl >= LogLevel {
 		defaultLogger.Println(v...)
+	}
+	if Notifier != nil {
+		Notifier.RatchetNotify(LevelError, nil, v)
 	}
 }
 
