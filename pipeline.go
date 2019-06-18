@@ -8,6 +8,7 @@ import (
 
 	"github.com/licaonfee/ratchet/data"
 	"github.com/licaonfee/ratchet/logger"
+	"github.com/licaonfee/ratchet/processors"
 	"github.com/licaonfee/ratchet/util"
 )
 
@@ -33,7 +34,7 @@ type PipelineIface interface {
 
 // NewPipeline creates a new pipeline ready to run the given DataProcessors.
 // For more complex use-cases, see NewBranchingPipeline.
-func NewPipeline(processors ...DataProcessor) *Pipeline {
+func NewPipeline(processors ...processors.DataProcessor) *Pipeline {
 	p := &Pipeline{Name: "Pipeline"}
 	stages := make([]*PipelineStage, len(processors))
 	for i, p := range processors {
@@ -64,9 +65,9 @@ func (p *Pipeline) dataProcessorOutputs(dp *ProcessorWrapper) []*ProcessorWrappe
 	dpouts := make([]*ProcessorWrapper, len(dp.outputs))
 	for i := range dp.outputs {
 		for _, stage := range p.layout.stages {
-			for j := range stage.processors {
-				if dp.outputs[i] == stage.processors[j].DataProcessor {
-					dpouts[i] = stage.processors[j]
+			for j := range stage.p {
+				if dp.outputs[i] == stage.p[j].DataProcessor {
+					dpouts[i] = stage.p[j]
 				}
 			}
 		}
@@ -85,7 +86,7 @@ func (p *Pipeline) connectStages() {
 	// First, setup the bridgeing channels & brancher/merger's to aid in
 	// managing channel communication between processors.
 	for _, stage := range p.layout.stages {
-		for _, from := range stage.processors {
+		for _, from := range stage.p {
 			if from.outputs != nil {
 				from.branchOutChans = []chan data.JSON{}
 				for _, to := range p.dataProcessorOutputs(from) {
@@ -102,7 +103,7 @@ func (p *Pipeline) connectStages() {
 	// Loop through again and setup goroutines to handle data management
 	// between the branchers and mergers
 	for _, stage := range p.layout.stages {
-		for _, dp := range stage.processors {
+		for _, dp := range stage.p {
 			if dp.branchOutChans != nil {
 				dp.branchOut()
 			}
@@ -115,7 +116,7 @@ func (p *Pipeline) connectStages() {
 
 func (p *Pipeline) runStages(killChan chan error) {
 	for n, stage := range p.layout.stages {
-		for _, dp := range stage.processors {
+		for _, dp := range stage.p {
 			p.wg.Add(1)
 			// Each DataProcessor runs in a separate gorountine.
 			go func(n int, dp *ProcessorWrapper) {
@@ -165,7 +166,7 @@ func (p *Pipeline) Run() (killChan chan error) {
 	p.connectStages()
 	p.runStages(killChan)
 
-	for _, dp := range p.layout.stages[0].processors {
+	for _, dp := range p.layout.stages[0].p {
 		logger.Debug(p.Name, ": sending", StartSignal, "to", dp)
 		dp.inputChan <- data.JSON(StartSignal)
 		dp.Finish(dp.outputChan, killChan)
@@ -206,7 +207,7 @@ func (p *Pipeline) Stats() []map[string]ExecutionStat {
 	es := make([]map[string]ExecutionStat, len(p.layout.stages))
 	for n, stage := range p.layout.stages {
 		es[n] = make(map[string]ExecutionStat)
-		for _, dp := range stage.processors {
+		for _, dp := range stage.p {
 			dp.ExecutionStat.Calculate()
 			es[n][dp.String()] = dp.ExecutionStat
 		}

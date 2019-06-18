@@ -6,24 +6,8 @@ import (
 	"sync"
 
 	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/processors"
 )
-
-// DataProcessor is the interface that should be implemented to perform data-related
-// tasks within a Pipeline. DataProcessors are responsible for receiving, processing,
-// and then sending data on to the next stage of processing.
-type DataProcessor interface {
-	// ProcessData will be called for each data sent from the previous stage.
-	// ProcessData is called with a data.JSON instance, which is the data being received,
-	// an outputChan, which is the channel to send data to, and a killChan,
-	// which is a channel to send unexpected errors to (halting execution of the Pipeline).
-	ProcessData(d data.JSON, outputChan chan data.JSON, killChan chan error)
-
-	// Finish will be called after the previous stage has finished sending data,
-	// and no more data will be received by this DataProcessor. Often times
-	// Finish can be an empty function implementation, but sometimes it is
-	// necessary to perform final data processing.
-	Finish(outputChan chan data.JSON, killChan chan error)
-}
 
 // ProcessorWrapper is a type used internally to the Pipeline management
 // code, and wraps a DataProcessor instance. DataProcessor is the main
@@ -31,12 +15,12 @@ type DataProcessor interface {
 // pipeline, and this ProcessorWrapper type simply embeds it and adds some
 // helpful channel management and other attributes.
 type ProcessorWrapper struct {
-	DataProcessor
+	processors.DataProcessor
 	ExecutionStat
 	concurrentDataProcessor
 	chanBrancher
 	chanMerger
-	outputs    []DataProcessor
+	outputs    []processors.DataProcessor
 	inputChan  chan data.JSON
 	outputChan chan data.JSON
 }
@@ -95,13 +79,13 @@ func (dp *ProcessorWrapper) mergeIn() {
 // succinctly to provide a nicer syntax when creating a PipelineLayout.
 // See the ratchet package documentation for code examples of creating
 // a new branching pipeline layout.
-func Do(processor DataProcessor) *ProcessorWrapper {
-	dp := ProcessorWrapper{DataProcessor: processor}
+func Do(p processors.DataProcessor) *ProcessorWrapper {
+	dp := ProcessorWrapper{DataProcessor: p}
 	dp.outputChan = make(chan data.JSON)
 	dp.inputChan = make(chan data.JSON)
 
-	if isConcurrent(processor) {
-		dp.concurrency = processor.(ConcurrentDataProcessor).Concurrency()
+	if isConcurrent(p) {
+		dp.concurrency = p.(ConcurrentDataProcessor).Concurrency()
 		dp.workThrottle = make(chan workSignal, dp.concurrency)
 		dp.workList = list.New()
 		dp.doneChan = make(chan bool)
@@ -114,8 +98,8 @@ func Do(processor DataProcessor) *ProcessorWrapper {
 // Outputs should be called to specify which DataProcessor instances the current
 // processor should send it's output to. See the ratchet package
 // documentation for code examples and diagrams.
-func (dp *ProcessorWrapper) Outputs(processors ...DataProcessor) *ProcessorWrapper {
-	dp.outputs = processors
+func (dp *ProcessorWrapper) Outputs(p ...processors.DataProcessor) *ProcessorWrapper {
+	dp.outputs = p
 	return dp
 }
 

@@ -3,6 +3,7 @@ package processors
 import (
 	"bufio"
 	"compress/gzip"
+	"errors"
 	"io"
 
 	"github.com/licaonfee/ratchet/data"
@@ -12,14 +13,77 @@ import (
 // IoReader wraps an io.Reader and reads it.
 type IoReader struct {
 	Reader     io.Reader
-	LineByLine bool // defaults to true
+	LineByLine bool // defaults to false
 	BufferSize int
 	Gzipped    bool
 }
 
 // NewIoReader returns a new IoReader wrapping the given io.Reader object.
 func NewIoReader(reader io.Reader) *IoReader {
-	return &IoReader{Reader: reader, LineByLine: true, BufferSize: 1024}
+	return &IoReader{Reader: reader, LineByLine: false, BufferSize: 1024}
+}
+
+//NewIOReader ss
+func NewIOReader(o ...Option) (DataProcessor, error) {
+	r := &IoReader{Reader: nil, LineByLine: false, BufferSize: 1024, Gzipped: false}
+	for _, opt := range o {
+		if err := opt(r); err != nil {
+			return nil, err
+		}
+	}
+	return r, nil
+}
+
+func toIoReader(p DataProcessor) (*IoReader, error) {
+	r, ok := p.(*IoReader)
+	if !ok {
+		return nil, errors.New("must be an IoReader")
+	}
+	return r, nil
+}
+
+func WithReader(rd io.Reader) Option {
+	return func(p DataProcessor) error {
+		r, err := toIoReader(p)
+		if err != nil {
+			return err
+		}
+		r.Reader = rd
+		return nil
+	}
+}
+
+func LineByLine() Option {
+	return func(p DataProcessor) error {
+		r, err := toIoReader(p)
+		if err != nil {
+			return err
+		}
+		r.LineByLine = true
+		return nil
+	}
+}
+
+func WithBufferSize(n int) Option {
+	return func(p DataProcessor) error {
+		r, err := toIoReader(p)
+		if err != nil {
+			return err
+		}
+		r.BufferSize = n
+		return nil
+	}
+}
+
+func Gzipped() Option {
+	return func(p DataProcessor) error {
+		r, err := toIoReader(p)
+		if err != nil {
+			return err
+		}
+		r.Gzipped = true
+		return nil
+	}
 }
 
 // ProcessData overwrites the reader if the content is Gzipped, then defers to ForEachData
@@ -41,18 +105,18 @@ func (r *IoReader) Finish(outputChan chan data.JSON, killChan chan error) {
 
 // ForEachData either reads by line or by buffered stream, sending the data
 // back to the anonymous func that ultimately shoves it onto the outputChan
-func (r *IoReader) ForEachData(killChan chan error, foo func(d data.JSON)) {
+func (r *IoReader) ForEachData(killChan chan error, forEach func(d data.JSON)) {
 	if r.LineByLine {
-		r.scanLines(killChan, foo)
+		r.scanLines(killChan, forEach)
 	} else {
-		r.bufferedRead(killChan, foo)
+		r.bufferedRead(killChan, forEach)
 	}
 }
 
 func (r *IoReader) scanLines(killChan chan error, forEach func(d data.JSON)) {
 	scanner := bufio.NewScanner(r.Reader)
 	for scanner.Scan() {
-		forEach(data.JSON(scanner.Text()))
+		forEach(data.JSON(scanner.Bytes()))
 	}
 	err := scanner.Err()
 	util.KillPipelineIfErr(err, killChan)

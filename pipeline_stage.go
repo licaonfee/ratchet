@@ -1,8 +1,10 @@
 package ratchet
 
+import "github.com/licaonfee/ratchet/processors"
+
 // PipelineStage holds one or more DataProcessor instances.
 type PipelineStage struct {
-	processors []*ProcessorWrapper
+	p []*ProcessorWrapper
 }
 
 // NewPipelineStage creates a PipelineStage instance given a series
@@ -25,14 +27,14 @@ type PipelineStage struct {
 // channel management works behind the scenes.
 //
 // See the ratchet package documentation for more code examples.
-func NewPipelineStage(processors ...*ProcessorWrapper) *PipelineStage {
-	return &PipelineStage{processors}
+func NewPipelineStage(p ...*ProcessorWrapper) *PipelineStage {
+	return &PipelineStage{p}
 }
 
 //TODO: Review if iterate over index is better than foreach
-func (s *PipelineStage) hasProcessor(p DataProcessor) bool {
-	for i := range s.processors {
-		if s.processors[i].DataProcessor == p {
+func (s *PipelineStage) hasProcessor(p processors.DataProcessor) bool {
+	for i := range s.p {
+		if s.p[i].DataProcessor == p {
 			return true
 		}
 	}
@@ -40,10 +42,10 @@ func (s *PipelineStage) hasProcessor(p DataProcessor) bool {
 }
 
 //TODO: Same as hasProcessor
-func (s *PipelineStage) hasOutput(p DataProcessor) bool {
-	for i := range s.processors {
-		for j := range s.processors[i].outputs {
-			if s.processors[i].outputs[j] == p {
+func (s *PipelineStage) hasOutput(p processors.DataProcessor) bool {
+	for i := range s.p {
+		for j := range s.p[i].outputs {
+			if s.p[i].outputs[j] == p {
 				return true
 			}
 		}

@@ -11,7 +11,7 @@ type Passthrough struct {
 }
 
 // NewPassthrough instantiates a new instance of Passthrough
-func NewPassthrough() *Passthrough {
+func NewPassthrough(opts ...Option) *Passthrough {
 	return &Passthrough{}
 }
 

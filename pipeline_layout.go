@@ -33,8 +33,8 @@ func (l *PipelineLayout) validate() error {
 	for stageNum := range l.stages {
 		stage = l.stages[stageNum]
 		var dp *ProcessorWrapper
-		for j := range stage.processors {
-			dp = stage.processors[j]
+		for j := range stage.p {
+			dp = stage.p[j]
 			// 1) final stages must NOT have outputs set
 			if stageNum == len(l.stages)-1 && dp.outputs != nil {
 				return fmt.Errorf("DataProcessor (%v) must have Outputs set in final PipelineStage", dp)

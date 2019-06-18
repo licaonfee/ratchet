@@ -6,6 +6,7 @@ import (
 
 	"github.com/licaonfee/ratchet/data"
 	"github.com/licaonfee/ratchet/logger"
+	"github.com/licaonfee/ratchet/processors"
 )
 
 // ConcurrentDataProcessor is a DataProcessor that also defines
@@ -17,12 +18,12 @@ import (
 // when a DataProcessor receives ProcessData calls d1, d2, ..., the resulting data
 // payloads sent on the outputChan will be sent in the same order as received.
 type ConcurrentDataProcessor interface {
-	DataProcessor
+	processors.DataProcessor
 	Concurrency() int
 }
 
 // IsConcurrent returns true if the given DataProcessor implements ConcurrentDataProcessor
-func isConcurrent(p DataProcessor) bool {
+func isConcurrent(p processors.DataProcessor) bool {
 	_, ok := interface{}(p).(ConcurrentDataProcessor)
 	return ok
 }

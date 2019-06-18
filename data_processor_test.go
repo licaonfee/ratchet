@@ -6,6 +6,7 @@ import (
 
 	"github.com/licaonfee/ratchet"
 	"github.com/licaonfee/ratchet/data"
+	"github.com/licaonfee/ratchet/processors"
 )
 
 type dummyDataProcessor struct {
@@ -21,7 +22,7 @@ func (d *dummyDataProcessor) Finish(o chan data.JSON, k chan error) {
 }
 func TestDo(t *testing.T) {
 	type args struct {
-		processor ratchet.DataProcessor
+		processor processors.DataProcessor
 	}
 	dummy := &dummyDataProcessor{q: 0}
 	tests := []struct {
