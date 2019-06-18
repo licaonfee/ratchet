@@ -34,30 +34,30 @@ var defaultLogger = log.New(os.Stdout, "", log.LstdFlags)
 
 // Debug logs output when LogLevel is set to at least Debug level
 func Debug(v ...interface{}) {
-	logit(LevelDebug, v)
+	logit(LevelDebug, v...)
 }
 
 // Info logs output when LogLevel is set to at least Info level
 func Info(v ...interface{}) {
-	logit(LevelInfo, v)
+	logit(LevelInfo, v...)
 }
 
 // Error logs output when LogLevel is set to at least Error level
 func Error(v ...interface{}) {
-	logit(LevelError, v)
+	logit(LevelError, v...)
 }
 
 // ErrorWithoutTrace logs output when LogLevel is set to at least Error level
 // but doesn't send the stack trace to Notifier. This is useful only when
 // using a RatchetNotifier implementation.
 func ErrorWithoutTrace(v ...interface{}) {
-	logit(LevelError, v)
+	logit(LevelError, v...)
 }
 
 // Status logs output when LogLevel is set to at least Status level
 // Status output is high-level status events like stages starting/completing.
 func Status(v ...interface{}) {
-	logit(LevelStatus, v)
+	logit(LevelStatus, v...)
 }
 
 func logit(lvl int, v ...interface{}) {
