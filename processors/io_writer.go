@@ -1,6 +1,7 @@
 package processors
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -20,6 +21,46 @@ type IoWriter struct {
 // NewIoWriter returns a new IoWriter wrapping the given io.Writer object
 func NewIoWriter(writer io.Writer) *IoWriter {
 	return &IoWriter{Writer: writer, AddNewline: false}
+}
+
+func NewIOWriter(opts ...Option) (DataProcessor, error) {
+	w := &IoWriter{}
+	for _, o := range opts {
+		if err := o(w); err != nil {
+			return nil, err
+		}
+	}
+	return w, nil
+}
+
+func toIOWriter(p DataProcessor) (*IoWriter, error) {
+	w, ok := p.(*IoWriter)
+	if !ok {
+		return nil, errors.New("must be an IoWriter")
+	}
+	return w, nil
+}
+
+func WithWriter(w io.Writer) Option {
+	return func(p DataProcessor) error {
+		d, err := toIOWriter(p)
+		if err != nil {
+			return err
+		}
+		d.Writer = w
+		return nil
+	}
+}
+
+func AddNewline() Option {
+	return func(p DataProcessor) error {
+		d, err := toIOWriter(p)
+		if err != nil {
+			return err
+		}
+		d.AddNewline = true
+		return nil
+	}
 }
 
 // ProcessData writes the data
