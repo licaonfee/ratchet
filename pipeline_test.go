@@ -1,6 +1,7 @@
 package ratchet_test
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"syscall"
@@ -203,11 +204,12 @@ func ExampleNewBranchingPipeline() {
 } */
 
 func TestPipeline_Stats(t *testing.T) {
-	hello := processors.NewIoReader(strings.NewReader("Hello world!"))
-	stdout := processors.NewIoWriter(os.Stdout)
+	hello, _ := processors.NewIoReader(processors.WithReader(strings.NewReader("Hello world!")))
+	stdout, _ := processors.NewIoWriter(processors.WithWriter(os.Stdout))
 	pipeline := ratchet.NewPipeline(hello, stdout)
 	pipeline.PrintData = true
-	proc := []string{hello.String(), stdout.String()}
+
+	proc := []string{fmt.Sprint(hello), fmt.Sprint(stdout)}
 	err := <-pipeline.Run()
 	st := pipeline.Stats()
 	if err != nil {

@@ -57,7 +57,7 @@ func TestIoReader_ProcessData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := processors.NewIOReader(tt.opts...)
+			r, err := processors.NewIoReader(tt.opts...)
 			if err != nil {
 				t.Error(err)
 			}

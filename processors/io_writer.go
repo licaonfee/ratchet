@@ -18,12 +18,8 @@ type IoWriter struct {
 	AddNewline bool
 }
 
-// NewIoWriter returns a new IoWriter wrapping the given io.Writer object
-func NewIoWriter(writer io.Writer) *IoWriter {
-	return &IoWriter{Writer: writer, AddNewline: false}
-}
-
-func NewIOWriter(opts ...Option) (DataProcessor, error) {
+// NewIoWriter returns a new IoWriter
+func NewIoWriter(opts ...Option) (DataProcessor, error) {
 	w := &IoWriter{}
 	for _, o := range opts {
 		if err := o(w); err != nil {

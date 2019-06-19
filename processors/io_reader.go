@@ -18,13 +18,8 @@ type IoReader struct {
 	Gzipped    bool
 }
 
-// NewIoReader returns a new IoReader wrapping the given io.Reader object.
-func NewIoReader(reader io.Reader) *IoReader {
-	return &IoReader{Reader: reader, LineByLine: false, BufferSize: 1024}
-}
-
-//NewIOReader ss
-func NewIOReader(o ...Option) (DataProcessor, error) {
+//NewIoReader create a new IO
+func NewIoReader(o ...Option) (DataProcessor, error) {
 	r := &IoReader{Reader: nil, LineByLine: false, BufferSize: 1024, Gzipped: false}
 	for _, opt := range o {
 		if err := opt(r); err != nil {

@@ -37,7 +37,7 @@ func TestIoWriter_ProcessData(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sharedBuff.Reset()
-			w, err := processors.NewIOWriter(tt.opts...)
+			w, err := processors.NewIoWriter(tt.opts...)
 			if err != nil {
 				t.Error(err)
 			}
