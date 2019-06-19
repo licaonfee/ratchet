@@ -1,0 +1,13 @@
+ version: 2
+ jobs:
+   build:
+    working_directory: /go/src/github.com/licaonfee/ratchet
+    docker:
+      - image: circleci/golang:1.11.0
+    steps:
+      - checkout
+      - run: 
+          name: test
+          command: |
+            go get .
+            go test -timeout 30s github.com/licaonfee/ratchet/... 
