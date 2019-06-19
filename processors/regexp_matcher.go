@@ -6,14 +6,13 @@ import (
 
 	"github.com/licaonfee/ratchet/data"
 	"github.com/licaonfee/ratchet/logger"
-	"github.com/licaonfee/ratchet/util"
 )
 
 // RegexpMatcher checks if incoming data matches the given Regexp, and sends
 // it on to the next stage only if it matches.
 // It is using regexp.Match under the covers: https://golang.org/pkg/regexp/#Match
 type RegexpMatcher struct {
-	pattern string //TODO: this should be *regexp.Regexp
+	pattern *regexp.Regexp
 	// Set to true to log each match attempt (logger must be in debug mode).
 	DebugLog bool
 }
@@ -39,18 +38,19 @@ func WithPattern(pattern string) Option {
 		if !ok {
 			return errors.New("must be a RegexpMatcher")
 		}
-		if _, err := regexp.Compile(pattern); err != nil {
+		p, err := regexp.Compile(pattern)
+		if err != nil {
 			return err
 		}
-		m.pattern = pattern
+		m.pattern = p
 		return nil
 	}
 }
 
 // ProcessData sends the data it receives to the outputChan only if it matches the supplied regex
 func (r *RegexpMatcher) ProcessData(d data.JSON, outputChan chan data.JSON, killChan chan error) {
-	matches, err := regexp.Match(r.pattern, d)
-	util.KillPipelineIfErr(err, killChan)
+	matches := r.pattern.Match(d)
+
 	if r.DebugLog {
 		logger.Debug("RegexpMatcher: checking if", string(d), "matches pattern", r.pattern, ". MATCH=", matches)
 	}
