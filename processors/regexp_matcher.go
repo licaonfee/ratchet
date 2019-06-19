@@ -1,6 +1,7 @@
 package processors
 
 import (
+	"errors"
 	"regexp"
 
 	"github.com/licaonfee/ratchet/data"
@@ -12,15 +13,38 @@ import (
 // it on to the next stage only if it matches.
 // It is using regexp.Match under the covers: https://golang.org/pkg/regexp/#Match
 type RegexpMatcher struct {
-	pattern string
+	pattern string //TODO: this should be *regexp.Regexp
 	// Set to true to log each match attempt (logger must be in debug mode).
 	DebugLog bool
 }
 
 // NewRegexpMatcher returns a new RegexpMatcher initialized
 // with the given pattern to match.
-func NewRegexpMatcher(pattern string) *RegexpMatcher {
-	return &RegexpMatcher{pattern, false}
+// func NewRegexpMatchers(pattern string) *RegexpMatcher {
+// 	return &RegexpMatcher{pattern, false}
+// }
+
+//NewRegexpMatcher returns a new RegexpMatcher or nil if configuraion is invalid
+func NewRegexpMatcher(opts ...Option) (DataProcessor, error) {
+	m := &RegexpMatcher{}
+	for _, o := range opts {
+		o(m)
+	}
+	return m, nil
+}
+
+func WithPattern(pattern string) Option {
+	return func(d DataProcessor) error {
+		m, ok := d.(*RegexpMatcher)
+		if !ok {
+			return errors.New("must be a RegexpMatcher")
+		}
+		if _, err := regexp.Compile(pattern); err != nil {
+			return err
+		}
+		m.pattern = pattern
+		return nil
+	}
 }
 
 // ProcessData sends the data it receives to the outputChan only if it matches the supplied regex
