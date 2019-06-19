@@ -1,8 +1,10 @@
 # Ratchet
 
+[![CircleCI](https://circleci.com/gh/licaonfee/ratchet/tree/develop.svg?style=svg)](https://circleci.com/gh/licaonfee/ratchet/tree/develop)
+
 <img align="right" src="http://assets1.dailyburn.com/random/the-ratchet.png" style="margin-left:20px">
 
-### A library for performing data pipeline / ETL tasks in Go.
+## A library for performing data pipeline / ETL tasks in Go
 
 The Go programming language's simplicity, execution speed, and concurrency support make it a great choice for building data pipeline systems that can perform custom ETL (Extract, Transform, Load) tasks. Ratchet is a library that is written 100% in Go, and let's you easily build custom data pipelines by writing your own Go code.
 
