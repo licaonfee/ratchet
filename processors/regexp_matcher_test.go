@@ -47,3 +47,28 @@ func TestRegexpMatcher_ProcessData(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkRegexMatcher(b *testing.B) {
+	b.StopTimer()
+	var emailPattern = "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+	p, err := processors.NewRegexpMatcher(processors.WithPattern(emailPattern))
+	if err != nil {
+		b.FailNow()
+	}
+	outC := make(chan data.JSON)
+	killC := make(chan error)
+	go func() {
+		for {
+			select {
+			case <-outC:
+			case <-killC:
+				b.FailNow()
+			}
+		}
+	}()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		p.ProcessData(data.JSON("email@sample.com"), outC, killC)
+	}
+
+}
