@@ -16,15 +16,25 @@ type CSVTransformer struct {
 }
 
 // NewCSVTransformer returns a new CSVTransformer wrapping the given io.Writer object
-func NewCSVTransformer() *CSVTransformer {
-	return &CSVTransformer{
-		Parameters: util.CSVParameters{
-			Writer:        util.NewCSVWriter(),
-			WriteHeader:   true,
-			HeaderWritten: false,
-			SendUpstream:  true,
-		},
+// func NewCSVTransformer() *CSVTransformer {
+// 	return &CSVTransformer{
+// 		Parameters: util.CSVParameters{
+// 			Writer:        util.NewCSVWriter(),
+// 			WriteHeader:   true,
+// 			HeaderWritten: false,
+// 			SendUpstream:  true,
+// 		},
+// 	}
+// }
+func NewCSVTransformer(opts ...Option) (DataProcessor, error) {
+	t := &CSVTransformer{}
+	t.Parameters = util.CSVParameters{Writer: util.NewCSVWriter(), WriteHeader: true, SendUpstream: true}
+	for _, o := range opts {
+		if err := o(t); err != nil {
+			return nil, err
+		}
 	}
+	return t, nil
 }
 
 // ProcessData defers to util.CSVProcess
