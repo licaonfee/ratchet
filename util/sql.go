@@ -19,13 +19,8 @@ import (
 // is retrieved from the query. If this happens, the object returned will be a JSON
 // object in the form of {"Error": "description"}.
 func GetDataFromSQLQuery(db *sql.DB, query string, batchSize int, structDest interface{}) (chan data.JSON, error) {
-	stmt, err := db.Prepare(query)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
 
-	rows, err := stmt.Query()
+	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
