@@ -33,9 +33,66 @@ type dataErr struct {
 }
 
 // NewSQLReader returns a new SQLReader operating in static mode.
-func NewSQLReader(dbConn *sql.DB, sql string) *SQLReader {
-	return &SQLReader{readDB: dbConn, query: sql, BatchSize: 1000}
+// func NewSQLReader(dbConn *sql.DB, sql string) *SQLReader {
+// 	return &SQLReader{readDB: dbConn, query: sql, BatchSize: 1000}
+// }
+func NewSQLReader(opts ...Option) (DataProcessor, error) {
+	d := &SQLReader{}
+	for _, o := range opts {
+		if err := o(d); err != nil {
+			return nil, err
+		}
+	}
+	return d, nil
 }
+
+func WithQuery(query string) Option {
+	return func(d DataProcessor) error {
+		p, ok := d.(*SQLReader)
+		if !ok {
+			return errors.New("must be a SQLReader")
+		}
+		p.query = query
+		return nil
+	}
+}
+
+func WithDB(db *sql.DB) Option {
+	return func(d DataProcessor) error {
+		p, ok := d.(*SQLReader)
+		if !ok {
+			return errors.New("must be a SQLReader")
+		}
+		p.readDB = db
+		return nil
+	}
+}
+
+func WithSQLGenerator(gen SQLGenerator) Option {
+	return func(d DataProcessor) error {
+		p, ok := d.(*SQLReader)
+		if !ok {
+			return errors.New("must be a SQLReader")
+		}
+		p.sqlGenerator = gen
+
+		return nil
+	}
+}
+
+func WithBatchSize(size int) Option {
+	return func(d DataProcessor) error {
+		p, ok := d.(*SQLReader)
+		if !ok {
+			return errors.New("must be a SQLReader")
+		}
+		p.BatchSize = size
+
+		return nil
+	}
+}
+
+type SQLGenerator func(data.JSON) (string, error)
 
 // NewDynamicSQLReader returns a new SQLReader operating in dynamic mode.
 func NewDynamicSQLReader(dbConn *sql.DB, sqlGenerator func(data.JSON) (string, error)) *SQLReader {

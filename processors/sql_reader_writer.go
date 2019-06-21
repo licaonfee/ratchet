@@ -1,8 +1,6 @@
 package processors
 
 import (
-	"database/sql"
-
 	"github.com/licaonfee/ratchet/data"
 )
 
@@ -21,19 +19,19 @@ type SQLReaderWriter struct {
 }
 
 // NewSQLReaderWriter returns a new SQLReaderWriter ready for static querying.
-func NewSQLReaderWriter(readConn *sql.DB, writeConn *sql.DB, readQuery, writeTable string) *SQLReaderWriter {
-	s := SQLReaderWriter{}
-	s.SQLReader = *NewSQLReader(readConn, readQuery)
-	s.SQLWriter = *NewSQLWriter(writeConn, writeTable)
-	return &s
-}
+// func NewSQLReaderWriter(readConn *sql.DB, writeConn *sql.DB, readQuery, writeTable string) *SQLReaderWriter {
+// 	s := SQLReaderWriter{}
+// 	s.SQLReader = *NewSQLReader(readConn, readQuery)
+// 	s.SQLWriter = *NewSQLWriter(writeConn, writeTable)
+// 	return &s
+// }
 
 // NewDynamicSQLReaderWriter returns a new SQLReaderWriter ready for dynamic querying.
-func NewDynamicSQLReaderWriter(readConn *sql.DB, writeConn *sql.DB, sqlGenerator func(data.JSON) (string, error), writeTable string) *SQLReaderWriter {
-	s := NewSQLReaderWriter(readConn, writeConn, "", writeTable)
-	s.sqlGenerator = sqlGenerator
-	return s
-}
+// func NewDynamicSQLReaderWriter(readConn *sql.DB, writeConn *sql.DB, sqlGenerator func(data.JSON) (string, error), writeTable string) *SQLReaderWriter {
+// 	s := NewSQLReaderWriter(readConn, writeConn, "", writeTable)
+// 	s.sqlGenerator = sqlGenerator
+// 	return s
+// }
 
 // ProcessData uses SQLReader methods for processing data - this works via composition
 func (s *SQLReaderWriter) ProcessData(d data.JSON, outputChan chan data.JSON, killChan chan error) {
