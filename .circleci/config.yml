@@ -9,5 +9,5 @@
       - run: 
           name: test
           command: |
-            go get .
+            go get -v .
             go test -timeout 30s github.com/licaonfee/ratchet/... 
