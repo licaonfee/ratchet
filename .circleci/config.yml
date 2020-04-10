@@ -10,4 +10,5 @@
           name: test
           command: |
             go get -v .
-            go test -timeout 30s github.com/licaonfee/ratchet/... 
+            echo $PWD
+            go test -timeout 30s ./... 
