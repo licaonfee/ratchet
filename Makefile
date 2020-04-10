@@ -10,5 +10,6 @@ test:
 		$(GOTEST) -v -cover ./...
 
 deps:
+		$(GOGET) github.com/DATA-DOG/go-sqlmock
 		$(GOGET) -v ./...
     
