@@ -1,5 +1,5 @@
 on: push
-name: My cool Action
+name: Run test
 jobs:
   checks:
     name: run
