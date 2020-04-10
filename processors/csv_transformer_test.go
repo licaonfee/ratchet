@@ -37,9 +37,9 @@ func TestCSVTransformer_ProcessData(t *testing.T) {
 			},
 				make(chan data.JSON, 3), make(chan error, 1)},
 			want: []data.JSON{
-				data.JSON(`"1.0000","2.0000","3.0000"`),
-				data.JSON(`"4.0000","5.0000","6.0000"`),
-				data.JSON(`"7.0000","8.0000","9.0000"`),
+				data.JSON(`"bar","baz","foo"` + "\n" + `"2.0000","3.0000","1.0000"` + "\n"),
+				data.JSON(`"5.0000","6.0000","4.0000"` + "\n"),
+				data.JSON(`"8.0000","9.0000","7.0000"` + "\n"),
 			},
 		},
 	}
@@ -55,6 +55,7 @@ func TestCSVTransformer_ProcessData(t *testing.T) {
 			got := make([]data.JSON, 0)
 			for i := 0; i < len(tt.want); i++ {
 				q := <-tt.args.outputChan
+				t.Logf("GET: %s", q)
 				got = append(got, q)
 			}
 			if !reflect.DeepEqual(got, tt.want) {
