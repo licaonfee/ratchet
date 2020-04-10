@@ -9,6 +9,5 @@
       - run: 
           name: test
           command: |
-            go get -v .
-            echo $PWD
+            go env 
             go test -timeout 30s ./... 
