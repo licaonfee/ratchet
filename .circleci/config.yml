@@ -3,7 +3,7 @@
    build:
     working_directory: /go/src/github.com/licaonfee/ratchet
     docker:
-      - image: circleci/golang:1.11.0
+      - image: circleci/golang:1.13
     steps:
       - checkout
       - run: 
